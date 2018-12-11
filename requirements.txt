@@ -1,2 +1,8 @@
 pytest
 numpy
+pymodm
+requests
+flask
+matplotlib
+scikit-image
+scipy
