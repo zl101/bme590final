@@ -8,6 +8,7 @@ from flask import Flask, jsonify, request
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
 from PIL import Image
+from skimage import data, exposure, img_as_float
 
 app = Flask(__name__)
 
@@ -78,22 +79,62 @@ def reverse_video(image, args):
 
 
 def validateNewUser(input):
-    return True
+    """
+    -1 for invalid, 0 for already exists, 1 for ur gucci
+    """
+    if(not isinstance(input, type({}))):
+        return -1
+    if "username" not in input.keys():
+        return -1
+    if(not isinstance(input["username"], type("a"))):
+        return -1
+    checkUserExist = User.objects.raw({"_id": input['username']}).count()
+    if(checkUserExist == 0):
+        return 1
+    else:
+        return 0
 
 
 def validateNewImage(input):
-    return True
+    if(not isinstance(input, type({}))):
+        return -1
+    if "username" not in input.keys():
+        return -1
+    if "filename" not in input.keys():
+        return -1
+    if "filetype" not in input.keys():
+        return -1
+    if "filedata" not in input.keys():
+        return -1
+    if "dimensions" not in input.keys():
+        return -1
+    return 1
 
+@app.route("/api/show_im_data", methods=["POST"])
+def showImData():
+    r = request.get_json()
+    username = r['username']
+    imagename = r["filename"]
+    user_call = User.objects.raw({"_id": user}).first()
+    for element in user_call.imglist:
+        if element == "":
+            continue
+        if element["filename"] == imagename:
+            return element["filedata"]
+    return "--"
 
 @app.route("/api/create_user", methods=["POST"])
 def createUser():
     r = request.get_json()
     username = r['username']
-    if(validateNewUser(r) == -1):
+    check = validateNewUser(r)
+    if(check == -1):
         return "not valid user"
+    if(check == 0):
+        return "User Set (Already Exists)"
     u = User(username=username, imgslist=[""])
     u.save()
-    return "success"
+    return "User Created"
 
 
 @app.route("/api/upload_image", methods=["POST"])
@@ -103,7 +144,7 @@ def upload_image():
     """
     r = request.get_json()
     if(validateNewImage(r) == -1):
-        return "not valid user"
+        return "something went wrong"
     # img = Image(datetime.datetime.now(),
     #             r['filename'],
     #             r['filedata'])
@@ -158,6 +199,8 @@ def process_image():
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1")
+    #checkUserExist = User.objects.raw({"_id": "can"})
+    #print(checkUserExist.count())
     # img = Image(filename="img0",
     #             raw_image="5",
     #             processed_images = {},

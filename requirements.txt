@@ -6,3 +6,5 @@ flask
 matplotlib
 scikit-image
 scipy
+pyqt5
+Pillow
