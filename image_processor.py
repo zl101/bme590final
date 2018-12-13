@@ -1,6 +1,7 @@
 import io
 import base64
 import datetime
+import time
 import math
 import numpy as np
 from pymodm import connect
@@ -132,6 +133,7 @@ def process_image():
             imstr = k['imgstring']
             image = decode_image_fromb64(imstr, k['filetype'], k['dimensions'])
             break
+    start = time.time()
     if method.lower() == "histogram equalization":
         processed = histogram_equalize(image)
     elif method.lower() == "contrast stretching":
@@ -144,8 +146,17 @@ def process_image():
         processed = gamma_correct(image)
     else:
         return "no method found"
-    whichim["processeddict"][method.lower()] = [processed
-                                                ,datetime.datetime.now()]
+    end = time.time()
+    elapsed_time = end-start
+    if method.lower() in whichim["processeddict"]:
+        data = whichim["processeddict"][method.lower()]
+        times_run = data[3]+1
+    else:
+        times_run = 1
+    whichim["processeddict"][method.lower()] = [processed,
+                                                datetime.datetime.now(),
+                                                elapsed_time,
+                                                times_run]
     usertoprocess.save()
     return processed
 
