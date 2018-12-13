@@ -325,7 +325,7 @@ class App(QMainWindow):
         if(check == 0):
            msg =  "User Set (Already Exists)"
            self.user = username
-           User.object.raw({"_id":username}).First().loginhist.append(datetime.datetime.now())
+           User.objects.raw({"_id":username}).first().loginhist.append(datetime.datetime.now())
         if check==1:
             u = User(username=username, imgslist=[""], loginhist = [datetime.datetime.now()])
             u.save()
