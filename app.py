@@ -277,7 +277,7 @@ class App(QMainWindow):
 
     def callExternalProcessing(self):
         print(self.comboBox.currentText())
-        #r= requests.post("http://127.0.0.1:5000/api/improcessing", json={"username":"chris", "filename":"cat.jpg", "processing": "histogram equalization"})
+        #r= requests.post("http://127.0.0.1:5000/api/im_processing", json={"username":"chris", "filename":"cat.jpg", "processing": "histogram equalization"})
 
     def on_click(self):
         #textboxValue=self.textbox.text()
