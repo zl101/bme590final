@@ -515,7 +515,6 @@ class App(QMainWindow):
         user_call = User.objects.raw({"_id": username}).first()
         inputlist = user_call.imgslist
         with zipfile.ZipFile('spam.zip', 'w') as myzip:
-            #myzip.writestr("cat.jpg",image_buf.read())
             for k in self.tozip:
                 filename = k[0]
                 ptype = k[1]
@@ -528,19 +527,19 @@ class App(QMainWindow):
                 if saveupload == "":
                     continue
                 tosave = Image.fromarray(decodedim)
-                #if fileformat == ".jpg":
-                #    tosave = tosave.convert("RGB")
                 fileformat = detectFtype(filename)
-                savestring = getRawName(filename) + datetime.datetime.now().strftime("%Y%m%d%H%M%S") + fileformat
+                savestring = getRawName(filename) \
+                    + datetime.datetime.now().strftime("%Y%m%d%H%M%S")\
+                    + fileformat
                 tosave.save(savestring)
-                with open( savestring, "rb") as image_file:
+                with open(savestring, "rb") as image_file:
                     encodedim = base64.b64encode(image_file.read())
                 image_bytes = base64.b64decode(encodedim)
                 image_buf = io.BytesIO(image_bytes)
                 myzip.writestr(savestring, image_buf.read())
 
     def addToZip(self):
-        toadd =  [self.textbox2.text(), self.comboBox.currentText()]
+        toadd = [self.textbox2.text(), self.comboBox.currentText()]
         self.tozip.append(toadd)
 
 if __name__ == '__main__':
