@@ -1,6 +1,8 @@
 import io
 import base64
 import datetime
+import time
+import math
 import numpy as np
 from pymodm import connect
 from pymodm import MongoModel, fields
@@ -8,6 +10,7 @@ from flask import Flask, jsonify, request
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
 from PIL import Image
+from skimage import data, exposure, img_as_float, util
 
 app = Flask(__name__)
 
@@ -18,110 +21,96 @@ class User(MongoModel):
     username = fields.CharField(primary_key=True)
     imgslist = fields.ListField()
 
-# class Image():
-#     def __init__(self, uploadTime, fileName, imgString):
-#         self.uploadtime = uploadTime
-#         self.filename = fileName
-#         self.imgstring = imgString
-#         self.processedDict = {}
 
-
-def constructImg(uploadTime, fileName, imgString, fileType, dimensions):
-    toret = {}
-    toret['uploadtime'] = uploadTime
-    toret['filename'] = fileName
-    toret['imgstring'] = imgString
-    toret['processeddict'] = {}
-    toret['filetype'] = fileType
-    toret["dimensions"] = dimensions
-    return toret
-
-# class Image(MongoModel):
-#     uploadtime = fields.
-#     filename = fileName
-#     imgstring = imgString
-#     processedDict = {}
-
-
-def encode_image_as_b64(image_path):
-    img = np.asarray(Image.open(image_path))
-    return base64.b64encode(img)
-
-
-def encode_image_nopath(image):
-    return base64.b64encode(image)
-
-
-def decode_b64_image(base64_string, format, dimensions):
+def decode_b64_image_helper(base64_string, format, dimensions):
     decode = base64.b64decode(base64_string)
-    res = numpy.frombuffer(decode, dtype=numpy.uint8)
-    return numpy.reshape(res, dimensions)
+    res = np.frombuffer(decode, dtype=np.uint8)
+    return np.reshape(res, dimensions)
+
+
+def decode_image_fromb64(imstring, format, shape):
+    imbytes = imstring.encode()
+    decoded = decode_b64_image_helper(imbytes, format, shape)
+    return decoded
 
 
 def histogram_equalize(image):
     nim = exposure.equalize_hist(image)
-    nim = 256*nim
+    nim = 255 * nim
     nim = nim.astype(np.uint8)
-    return encode_image_no_path(nim)
+    return base64.b64encode(nim).decode()
 
 
-def contrast_stretch(image, args):
-    return 0
+def contrast_stretch(image):
+    # min = np.amin(image)
+    # max = np.amax(image)
+    # con_str = lambda elem: (elem-min)*(((255-0)/(max-min))+0)
+    # new_image = con_str(image)
+    # new_image = 255*new_image
+    # new_image = new_image.astype(np.uint8)
+    nim = exposure.rescale_intensity(image, out_range=(0, 255))
+    return base64.b64encode(nim).decode()
 
 
-def log_compress(image, args):
-    return 0
+def log_compress(image):
+    # max = np.amax(image)
+    # gain = float(255)/float(math.log(1+abs(max)))
+    # log_com = lambda elem: gain*math.log(1+abs(elem))
+    # new_image = log_com(image)
+    # new_image = 255*new_image
+    # new_image = new_image.astype(np.uint8)
+    nim = exposure.adjust_log(image)
+    nim = 255 * nim
+    nim = nim.astype(np.uint8)
+    return base64.b64encode(nim).decode()
 
 
-def reverse_video(image, args):
-    return 0
+def reverse_video(image):
+    nim = util.invert(image)
+    return base64.b64encode(nim).decode()
+
+
+def gamma_correct(image):
+    nim = exposure.adjust_gamma(image, 0.5)
+    nim = 255 * nim
+    nim = nim.astype(np.uint8)
+    return base64.b64encode(nim).decode()
 
 
 def validateNewUser(input):
-    return True
+    """
+    -1 for invalid, 0 for already exists, 1 for ur gucci
+    """
+    if (not isinstance(input, type({}))):
+        return -1
+    if "username" not in input.keys():
+        return -1
+    if (not isinstance(input["username"], type("a"))):
+        return -1
+    checkUserExist = User.objects.raw({"_id": input['username']}).count()
+    if (checkUserExist == 0):
+        return 1
+    else:
+        return 0
 
 
 def validateNewImage(input):
-    return True
+    if (not isinstance(input, type({}))):
+        return -1
+    if "username" not in input.keys():
+        return -1
+    if "filename" not in input.keys():
+        return -1
+    if "filetype" not in input.keys():
+        return -1
+    if "filedata" not in input.keys():
+        return -1
+    if "dimensions" not in input.keys():
+        return -1
+    return 1
 
 
-@app.route("/api/create_user", methods=["POST"])
-def createUser():
-    r = request.get_json()
-    username = r['username']
-    if(validateNewUser(r) == -1):
-        return "not valid user"
-    u = User(username=username, imgslist=[""])
-    u.save()
-    return "success"
-
-
-@app.route("/api/upload_image", methods=["POST"])
-def upload_image():
-    """
-    Needs fields filename, filedata, username, filetype, dimensions
-    """
-    r = request.get_json()
-    if(validateNewImage(r) == -1):
-        return "not valid user"
-    # img = Image(datetime.datetime.now(),
-    #             r['filename'],
-    #             r['filedata'])
-    user = r['username']
-    newim = constructImg(datetime.datetime.now(),
-                         r['filename'],
-                         r['filedata'],
-                         r['filetype'],
-                         r["dimensions"])
-    # if len(User.objects.({"_id": user}))==0:
-    #    createUser(user)
-    user_call = User.objects.raw({"_id": user}).first()
-    user_call.imgslist.append(newim)
-    user_call.save()
-    return "success"
-
-
-@app.route("/api/process_image/", methods=["POST"])
+@app.route("/api/im_processing", methods=["POST"])
 def process_image():
     # Histogram Equalization [default]
     # Contrast Stretching
@@ -131,46 +120,45 @@ def process_image():
     Needs filename, method, method_args, username
     """
     r = request.get_json()
+    username = r['username']
+    method = r['processing']
+    # validate json, parse json
     usertoprocess = User.objects.raw({"_id": username}).first()
     for k in usertoprocess.imgslist:
         if k == "":
             continue
         if k['filename'] == r['filename']:
             whichim = k
-            imstr = k['imstring']
-            image = decode_b64_image(imstr, k['filetype'], k['dimensions'])
+            imstr = k['imgstring']
+            image = decode_image_fromb64(imstr, k['filetype'], k['dimensions'])
             break
-    # raw_img = image_to_process.raw_image
+    start = time.time()
     if method.lower() == "histogram equalization":
         processed = histogram_equalize(image)
     elif method.lower() == "contrast stretching":
-        processed = contrast_stretch(raw_img, method_args)
+        processed = contrast_stretch(image)
     elif method.lower() == "log compression":
-        processed = log_compress(raw_img, method_args)
+        processed = log_compress(image)
     elif method.lower() == "reverse video":
-        processed = reverse_video(raw_img, method_args)
+        processed = reverse_video(image)
+    elif method.lower() == "gamma correction":
+        processed = gamma_correct(image)
     else:
-        return -1
+        return "no method found"
+    end = time.time()
+    elapsed_time = end - start
+    if method.lower() in whichim["processeddict"]:
+        data = whichim["processeddict"][method.lower()]
+        times_run = data[3] + 1
+    else:
+        times_run = 1
     whichim["processeddict"][method.lower()] = [processed,
-                                                datetime.datetime.now()]
+                                                datetime.datetime.now(),
+                                                elapsed_time,
+                                                times_run]
     usertoprocess.save()
+    return processed
 
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1")
-    # img = Image(filename="img0",
-    #             raw_image="5",
-    #             processed_images = {},
-    #             metrics ={})
-    # img.save()
-    #
-    # for i in Image.objects.raw({}):
-    #     print(i)
-    #     print(i.filename)
-    #     print(i.processed_images)
-
-    # filepath = "./cat.jpg"
-    # encoded = encode_image_as_b64(filepath)
-    # print(encoded)
-    # decode_b64_image(encoded)
-    # r2 = requests.post("http://bme590.suyash.io/sum", json={"a": 1, "b": 2})
