@@ -15,6 +15,7 @@ from pymodm import connect
 from pymodm import MongoModel, fields
 import zipfile
 import os
+from matplotlib.pyplot import figure
 
 connect("mongodb://daequan:360oogabooga@ds119151.mlab.com:19151/bme590finaldb")
 
@@ -128,6 +129,33 @@ def validateNewUser(input):
         return 0
 
 
+def fetchDbHelper(list, filename, processing):
+    saveupload = ""
+    saveshape = ""
+    numtimes = ""
+    howlong = ""
+    decodedim = ""
+    for k in list:
+        if k == "":
+            continue
+        if k['filename'] == filename:
+            #imdata = k['imgstring']
+            if processing == 'none':
+                decodedim = decode_image_fromb64(k['imgstring'], k['filetype'], k['dimensions'])
+                saveshape = str(k['dimensions'])
+                saveupload = k['uploadtime'].strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                if processing not in k['processeddict'].keys():
+                    break
+                temp = k['processeddict'][processing]
+                decodedim = decode_image_fromb64(temp[0], k['filetype'], k['dimensions'])
+                saveshape = str(k['dimensions'])
+                saveupload = temp[1].strftime("%Y-%m-%d %H:%M:%S")
+                numtimes = temp[3]
+                howlong = temp[2]
+    return [decodedim, saveshape, saveupload, numtimes, howlong]
+
+
 def upload_image(user, filename, filetype, dimensions, filedata):
     """
     Needs fields filename, filedata, username, filetype, dimensions
@@ -154,31 +182,29 @@ def upload_image(user, filename, filetype, dimensions, filedata):
     return 1
 
 
-def showIM(username, filename):
+def showIM(username, filename, processing):
     """
     Displays image as specified in filename
 
     :returns doesn't return lul
     """
     user_call = User.objects.raw({"_id": username}).first()
-    saveupload = ""
-    saveshape = []
-    for k in user_call.imgslist:
-        if k == "":
-            continue
-        if k['filename'] == filename:
-            #imdata = k['imgstring']
-            decodedim = decode_image_fromb64(k['imgstring'], k['filetype'], k['dimensions'])
-            saveshape = str(k['dimensions'])
-            saveupload = k['uploadtime'].strftime("%Y-%m-%d %H:%M:%S")
-    if saveupload == "":
+    ret = fetchDbHelper(user_call.imgslist, filename, processing)
+    if ret[1] == "":
         return -1
+    decodedim = ret[0]
+    saveupload = ret[2]
+    saveshape = ret[1]
+    numtimes = ret[3]
+    howlong = ret[4]
     plt.imshow(decodedim)
     plt.title(saveupload + "  " + saveshape)
+    if howlong != "":
+        plt.xlabel("runtime: " + str(howlong) + " | numtimes:" + str(numtimes) )
     plt.show()
 
 
-def downloadIM(username, filename, fileformat):
+def downloadIM(username, filename, fileformat, processing):
     """
     Downloads specified image in given format
 
@@ -188,18 +214,14 @@ def downloadIM(username, filename, fileformat):
     if testcount == 0:
         return
     user_call = User.objects.raw({"_id": username}).first()
-    save = ''
-    for k in user_call.imgslist:
-        if k == "":
-            continue
-        if k['filename'] == filename:
-            #imdata = k['imgstring']
-            save = k['imgstring']
-            decodedim = decode_image_fromb64(k['imgstring'], k['filetype'], k['dimensions'])
-    #imbytes = save.encode()
-    #decode = base64.b64decode(imbytes)
-    #plt.imshow(decodedim)
-    #plt.show()
+    ret = fetchDbHelper(user_call.imgslist, filename, processing)
+    if ret[1] == "":
+        return -1
+    decodedim = ret[0]
+    saveupload = ret[2]
+    saveshape = ret[1]
+    numtimes = ret[3]
+    howlong = ret[4]
     tosave = Image.fromarray(decodedim)
     if fileformat == ".jpg":
         tosave = tosave.convert("RGB")
@@ -208,34 +230,65 @@ def downloadIM(username, filename, fileformat):
     #f = io.BytesIO()
     tosave.save(savestring)
     return 1;
-    #with zipfile.ZipFile('spam.zip', 'w') as myzip:
-    #    myzip.writestr(savestring, tosave.tobytes())
 
 
-def showHI(username, filename):
+
+def showHI(username, filename, processing):
     """
     Displays histogram of given image
     """
     user_call = User.objects.raw({"_id": username}).first()
-    saveupload = ""
-    saveshape = []
-    onedim = ''
-    for k in user_call.imgslist:
-        if k == "":
-            continue
-        if k['filename'] == filename:
-            #imdata = k['imgstring']
-            decodedim = decode_image_fromb64(k['imgstring'], k['filetype'], k['dimensions'])
-            onedim = k['dimensions'][0]
+    ret = fetchDbHelper(user_call.imgslist, filename, processing)
+    if ret[1] == "":
+        return -1
+    decodedim = ret[0]
     plt.hist(np.reshape(decodedim, (-1,1)), bins = 256, range=(0.0, 255.0))
     plt.title("histogram")
     plt.show()
 
 
+def compareIM(username, filename1, processing1, filename2, processing2):
+    """
+    compares two selected images
+    """
+    testcount = User.objects.raw({"_id": username}).count()
+    if testcount == 0:
+        return
+    user_call = User.objects.raw({"_id": username}).first()
+    ret = fetchDbHelper(user_call.imgslist, filename1, processing1)
+    if ret[1] == "":
+        return -1
+    decodedim1 = ret[0]
+    saveupload1 = ret[2]
+    saveshape1 = ret[1]
+    numtimes1 = ret[3]
+    howlong1 = ret[4]
+    ret2 = fetchDbHelper(user_call.imgslist, filename2, processing2)
+    if ret2[1] == "":
+        return -1
+    decodedim2 = ret2[0]
+    saveupload2 = ret2[2]
+    saveshape2 = ret2[1]
+    numtimes2 = ret2[3]
+    howlong2 = ret2[4]
+    figure(num=None, figsize = (12,8))
+    plt.subplot(1,2,1)
+    plt.imshow(decodedim1)
+    plt.title(saveupload1 + "  " + saveshape1)
+    if howlong1 != "":
+        plt.xlabel("runtime: " + str(howlong1) + " | numtimes:" + str(numtimes1) )
+    plt.subplot(1,2,2)
+    plt.imshow(decodedim2)
+    plt.title(saveupload2 + "  " + saveshape2)
+    if howlong2 != "":
+        plt.xlabel("runtime: " + str(howlong2) + " | numtimes:" + str(numtimes2) )
+    plt.show()
+
 class User(MongoModel):
     username = fields.CharField(primary_key=True)
     imgslist = fields.ListField()
     loginhist = fields.ListField()
+
 
 
 class App(QMainWindow):
@@ -274,16 +327,20 @@ class App(QMainWindow):
         self.button3.move(30,500)
         self.button3.clicked.connect(self.callProcessImages)
         self.comboBox = QComboBox(self)
-        self.comboBox.addItem("A")
-        self.comboBox.addItem("B")
-        self.comboBox.addItem("C")
-        self.comboBox.addItem("D")
+        self.comboBox.addItem("none")
+        self.comboBox.addItem("histogram equalization")
+        self.comboBox.addItem("contrast stretching")
+        self.comboBox.addItem("log compression")
+        self.comboBox.addItem("reverse video")
+        self.comboBox.addItem("gamma correction")
         self.comboBox.move(350, 125)
         self.comboBox2 = QComboBox(self)
-        self.comboBox2.addItem("A")
-        self.comboBox2.addItem("B")
-        self.comboBox2.addItem("C")
-        self.comboBox2.addItem("D")
+        self.comboBox2.addItem("none")
+        self.comboBox2.addItem("histogram equalization")
+        self.comboBox2.addItem("contrast stretching")
+        self.comboBox2.addItem("log compression")
+        self.comboBox2.addItem("reverse video")
+        self.comboBox2.addItem("gamma correction")
         self.comboBox2.move(350, 215)
         self.comboBox3 = QComboBox(self)
         self.comboBox3.addItem(".jpg")
@@ -305,6 +362,9 @@ class App(QMainWindow):
         self.button8=QPushButton('Show Histogram',self)
         self.button8.move(30,700)
         self.button8.clicked.connect(self.showHistogram)
+        self.button9=QPushButton('Compare Images',self)
+        self.button9.move(400,700)
+        self.button9.clicked.connect(self.compareImages)
         self.button.resize(200,30)
         self.button2.resize(200,30)
         self.button3.resize(200,30)
@@ -312,6 +372,7 @@ class App(QMainWindow):
         self.button5.resize(200,30)
         self.button7.resize(200,30)
         self.button8.resize(200,30)
+        self.button9.resize(200,30)
         #self.imlabel = Qlabel(self)
 
         self.show()
@@ -357,18 +418,27 @@ class App(QMainWindow):
         self.files = []
 
     def downloadImage(self):
-        downloadIM(self.user, self.textbox2.text(), self.comboBox3.currentText())
+        downloadIM(self.user, self.textbox2.text(), self.comboBox3.currentText(), self.comboBox2.currentText())
 
     def showImage(self):
-        showIM(self.user, self.textbox2.text())
+        print(self.comboBox.currentText())
+        showIM(self.user, self.textbox2.text(),  self.comboBox.currentText())
         #r= requests.post("http://127.0.0.1:5000/api/upload_image", json={"username":"chris", "filename":fname})
 
     def showHistogram(self):
-        showHI(self.user, self.textbox2.text())
+        showHI(self.user, self.textbox2.text(),  self.comboBox.currentText())
 
     def callExternalProcessing(self):
-        print(self.comboBox.currentText())
-        #r= requests.post("http://127.0.0.1:5000/api/im_processing", json={"username":"chris", "filename":"cat.jpg", "processing": "histogram equalization"})
+        processingtype = self.comboBox.currentText()
+        imname = self.textbox2.text()
+        r= requests.post("http://127.0.0.1:5000/api/im_processing", json={"username":self.user, "filename":imname, "processing": processingtype})
+
+    def compareImages(self):
+        in1 = self.textbox2.text()
+        in2 = self.comboBox.currentText()
+        in3 = self.textbox3.text()
+        in4 = self.comboBox2.currentText()
+        compareIM(self.user, in1, in2, in3, in4)
 
     def on_click(self):
         print("nada")
