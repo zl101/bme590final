@@ -5,6 +5,7 @@ p1 = "C:/a/b/cat.jpg"
 p2 = "cat.jpg"
 p3 = "C:/a/b/dog.png"
 
+
 @pytest.mark.parametrize("testinput,expected", [
     (p1, "cat.jpg"),
     (p2, "cat.jpg"),
