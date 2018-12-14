@@ -181,7 +181,7 @@ def upload_image(user, filename, filetype, dimensions, filedata):
             continue
         if k['filename'] == filename:
             del user_call.imgslist[counter]
-        counter = counter + 1;
+        counter = counter + 1
     user_call.imgslist.append(newim)
     user_call.save()
     return 1
@@ -235,7 +235,7 @@ def downloadIM(username, filename, fileformat, processing):
     # print(savestring)
     # f = io.BytesIO()
     tosave.save(savestring)
-    return 1;
+    return 1
 
 
 def showHI(username, filename, processing):

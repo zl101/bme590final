@@ -6,7 +6,6 @@ p2 = "cat.jpg"
 p3 = "C:/a/b/dog.png"
 
 
-
 @pytest.mark.parametrize("testinput,expected", [
     (p1, ".jpg"),
     (p2, ".jpg"),
