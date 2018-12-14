@@ -36,7 +36,7 @@ def decode_image_fromb64(imstring, format, shape):
 
 def histogram_equalize(image):
     nim = exposure.equalize_hist(image)
-    nim = 255*nim
+    nim = 255 * nim
     nim = nim.astype(np.uint8)
     return base64.b64encode(nim).decode()
 
@@ -48,7 +48,7 @@ def contrast_stretch(image):
     # new_image = con_str(image)
     # new_image = 255*new_image
     # new_image = new_image.astype(np.uint8)
-    nim = exposure.rescale_intensity(image,out_range=(0,255))
+    nim = exposure.rescale_intensity(image, out_range=(0, 255))
     return base64.b64encode(nim).decode()
 
 
@@ -60,7 +60,7 @@ def log_compress(image):
     # new_image = 255*new_image
     # new_image = new_image.astype(np.uint8)
     nim = exposure.adjust_log(image)
-    nim = 255*nim
+    nim = 255 * nim
     nim = nim.astype(np.uint8)
     return base64.b64encode(nim).decode()
 
@@ -72,7 +72,7 @@ def reverse_video(image):
 
 def gamma_correct(image):
     nim = exposure.adjust_gamma(image, 0.5)
-    nim = 255*nim
+    nim = 255 * nim
     nim = nim.astype(np.uint8)
     return base64.b64encode(nim).decode()
 
@@ -81,21 +81,21 @@ def validateNewUser(input):
     """
     -1 for invalid, 0 for already exists, 1 for ur gucci
     """
-    if(not isinstance(input, type({}))):
+    if (not isinstance(input, type({}))):
         return -1
     if "username" not in input.keys():
         return -1
-    if(not isinstance(input["username"], type("a"))):
+    if (not isinstance(input["username"], type("a"))):
         return -1
     checkUserExist = User.objects.raw({"_id": input['username']}).count()
-    if(checkUserExist == 0):
+    if (checkUserExist == 0):
         return 1
     else:
         return 0
 
 
 def validateNewImage(input):
-    if(not isinstance(input, type({}))):
+    if (not isinstance(input, type({}))):
         return -1
     if "username" not in input.keys():
         return -1
@@ -108,7 +108,6 @@ def validateNewImage(input):
     if "dimensions" not in input.keys():
         return -1
     return 1
-
 
 
 @app.route("/api/im_processing", methods=["POST"])
@@ -147,10 +146,10 @@ def process_image():
     else:
         return "no method found"
     end = time.time()
-    elapsed_time = end-start
+    elapsed_time = end - start
     if method.lower() in whichim["processeddict"]:
         data = whichim["processeddict"][method.lower()]
-        times_run = data[3]+1
+        times_run = data[3] + 1
     else:
         times_run = 1
     whichim["processeddict"][method.lower()] = [processed,

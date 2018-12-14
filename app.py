@@ -1,4 +1,6 @@
-from PyQt5.QtWidgets import QMainWindow,QApplication,QWidget,QPushButton,QAction,QLineEdit,QMessageBox, QFileDialog, QComboBox
+from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QPushButton, \
+    QAction, QLineEdit, QMessageBox, \
+    QFileDialog, QComboBox
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 import requests
@@ -27,10 +29,10 @@ def detectFname(path):
     :returns filename
     """
     loc = path.rfind("/")
-    if(loc == -1):
+    if (loc == -1):
         return path
     else:
-        return path[loc+1:]
+        return path[loc + 1:]
 
 
 def detectFilePathNoName(path):
@@ -40,10 +42,10 @@ def detectFilePathNoName(path):
     :returns path string
     """
     loc = path.rfind("/")
-    if(loc == -1):
+    if (loc == -1):
         return loc
     else:
-        return path[0:loc+1]
+        return path[0:loc + 1]
 
 
 def detectFtype(path):
@@ -53,10 +55,11 @@ def detectFtype(path):
     :returns filetype
     """
     loc = path.rfind(".")
-    if(loc == -1):
+    if (loc == -1):
         return loc
     else:
         return path[loc:]
+
 
 def getRawName(path):
     """
@@ -69,6 +72,7 @@ def getRawName(path):
         return loc
     else:
         return path[0:loc]
+
 
 def constructImg(uploadTime, fileName, imgString, fileType, dimensions):
     """
@@ -97,7 +101,6 @@ def encode_image_as_b64_wmetrics(image_path):
     return [imname, imtype, shape, base64.b64encode(img).decode()]
 
 
-
 def decode_b64_image_helper(base64_string, format, dimensions):
     """
     Helper Function for decode
@@ -123,7 +126,7 @@ def validateNewUser(input):
     -1 for invalid, 0 for already exists, 1 for ur gucci
     """
     checkUserExist = User.objects.raw({"_id": input}).count()
-    if(checkUserExist == 0):
+    if (checkUserExist == 0):
         return 1
     else:
         return 0
@@ -139,16 +142,18 @@ def fetchDbHelper(list, filename, processing):
         if k == "":
             continue
         if k['filename'] == filename:
-            #imdata = k['imgstring']
+            # imdata = k['imgstring']
             if processing == 'none':
-                decodedim = decode_image_fromb64(k['imgstring'], k['filetype'], k['dimensions'])
+                decodedim = decode_image_fromb64(k['imgstring'], k['filetype'],
+                                                 k['dimensions'])
                 saveshape = str(k['dimensions'])
                 saveupload = k['uploadtime'].strftime("%Y-%m-%d %H:%M:%S")
             else:
                 if processing not in k['processeddict'].keys():
                     break
                 temp = k['processeddict'][processing]
-                decodedim = decode_image_fromb64(temp[0], k['filetype'], k['dimensions'])
+                decodedim = decode_image_fromb64(temp[0], k['filetype'],
+                                                 k['dimensions'])
                 saveshape = str(k['dimensions'])
                 saveupload = temp[1].strftime("%Y-%m-%d %H:%M:%S")
                 numtimes = temp[3]
@@ -165,10 +170,10 @@ def upload_image(user, filename, filetype, dimensions, filedata):
     :returns 1 for funsies
     """
     newim = constructImg(datetime.datetime.now(),
-                        filename,
-                        filedata,
-                        filetype,
-                        dimensions)
+                         filename,
+                         filedata,
+                         filetype,
+                         dimensions)
     user_call = User.objects.raw({"_id": user}).first()
     counter = 0
     for k in user_call.imgslist:
@@ -200,7 +205,7 @@ def showIM(username, filename, processing):
     plt.imshow(decodedim)
     plt.title(saveupload + "  " + saveshape)
     if howlong != "":
-        plt.xlabel("runtime: " + str(howlong) + " | numtimes:" + str(numtimes) )
+        plt.xlabel("runtime: " + str(howlong) + " | numtimes:" + str(numtimes))
     plt.show()
 
 
@@ -225,12 +230,12 @@ def downloadIM(username, filename, fileformat, processing):
     tosave = Image.fromarray(decodedim)
     if fileformat == ".jpg":
         tosave = tosave.convert("RGB")
-    savestring = getRawName(filename) + datetime.datetime.now().strftime("%Y%m%d%H%M%S") + fileformat
-    #print(savestring)
-    #f = io.BytesIO()
+    savestring = getRawName(filename) + datetime.datetime.now().strftime(
+        "%Y%m%d%H%M%S") + fileformat
+    # print(savestring)
+    # f = io.BytesIO()
     tosave.save(savestring)
     return 1;
-
 
 
 def showHI(username, filename, processing):
@@ -242,7 +247,7 @@ def showHI(username, filename, processing):
     if ret[1] == "":
         return -1
     decodedim = ret[0]
-    plt.hist(np.reshape(decodedim, (-1,1)), bins = 256, range=(0.0, 255.0))
+    plt.hist(np.reshape(decodedim, (-1, 1)), bins=256, range=(0.0, 255.0))
     plt.title("histogram")
     plt.show()
 
@@ -271,18 +276,21 @@ def compareIM(username, filename1, processing1, filename2, processing2):
     saveshape2 = ret2[1]
     numtimes2 = ret2[3]
     howlong2 = ret2[4]
-    figure(num=None, figsize = (12,8))
-    plt.subplot(1,2,1)
+    figure(num=None, figsize=(12, 8))
+    plt.subplot(1, 2, 1)
     plt.imshow(decodedim1)
     plt.title(saveupload1 + "  " + saveshape1)
     if howlong1 != "":
-        plt.xlabel("runtime: " + str(howlong1) + " | numtimes:" + str(numtimes1) )
-    plt.subplot(1,2,2)
+        plt.xlabel(
+            "runtime: " + str(howlong1) + " | numtimes:" + str(numtimes1))
+    plt.subplot(1, 2, 2)
     plt.imshow(decodedim2)
     plt.title(saveupload2 + "  " + saveshape2)
     if howlong2 != "":
-        plt.xlabel("runtime: " + str(howlong2) + " | numtimes:" + str(numtimes2) )
+        plt.xlabel(
+            "runtime: " + str(howlong2) + " | numtimes:" + str(numtimes2))
     plt.show()
+
 
 class User(MongoModel):
     username = fields.CharField(primary_key=True)
@@ -290,41 +298,41 @@ class User(MongoModel):
     loginhist = fields.ListField()
 
 
-
 class App(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.title='Hello, world!'
-        self.left=290
-        self.top=200
-        self.width=800
-        self.height=800
+        self.title = 'Hello, world!'
+        self.left = 290
+        self.top = 200
+        self.width = 800
+        self.height = 800
         self.files = []
         self.user = ""
         self.initUI()
+
     def initUI(self):
         self.setWindowTitle(self.title)
-        self.setGeometry(self.left,self.top,self.width,self.height)
-        self.textbox=QLineEdit(self)
-        self.textbox.move(30,30)
+        self.setGeometry(self.left, self.top, self.width, self.height)
+        self.textbox = QLineEdit(self)
+        self.textbox.move(30, 30)
         self.textbox.setText("Username Field")
-        self.textbox2=QLineEdit(self)
-        self.textbox2.move(30,120)
+        self.textbox2 = QLineEdit(self)
+        self.textbox2.move(30, 120)
         self.textbox2.setText("Filename Field 1")
-        self.textbox.resize(280,40)
-        self.textbox2.resize(280,40)
-        self.textbox3=QLineEdit(self)
-        self.textbox3.move(30,210)
+        self.textbox.resize(280, 40)
+        self.textbox2.resize(280, 40)
+        self.textbox3 = QLineEdit(self)
+        self.textbox3.move(30, 210)
         self.textbox3.setText("Filename Field 2")
-        self.textbox3.resize(280,40)
-        self.button=QPushButton('Set or Create User',self)
-        self.button.move(30,400)
+        self.textbox3.resize(280, 40)
+        self.button = QPushButton('Set or Create User', self)
+        self.button.move(30, 400)
         self.button.clicked.connect(self.callCreateUser)
-        self.button2=QPushButton('Add Image',self)
-        self.button2.move(400,400)
+        self.button2 = QPushButton('Add Image', self)
+        self.button2.move(400, 400)
         self.button2.clicked.connect(self.callAddImage)
-        self.button3=QPushButton('Upload Added Images',self)
-        self.button3.move(30,500)
+        self.button3 = QPushButton('Upload Added Images', self)
+        self.button3.move(30, 500)
         self.button3.clicked.connect(self.callProcessImages)
         self.comboBox = QComboBox(self)
         self.comboBox.addItem("none")
@@ -347,70 +355,78 @@ class App(QMainWindow):
         self.comboBox3.addItem(".png")
         self.comboBox3.addItem(".tif")
         self.comboBox3.move(600, 600)
-        self.button4=QPushButton('Do IM Processing',self)
-        self.button4.move(400,500)
+        self.button4 = QPushButton('Do IM Processing', self)
+        self.button4.move(400, 500)
         self.button4.clicked.connect(self.callExternalProcessing)
-        self.button5=QPushButton('Show Image',self)
-        self.button5.move(30,600)
+        self.button5 = QPushButton('Show Image', self)
+        self.button5.move(30, 600)
         self.button5.clicked.connect(self.showImage)
-        self.button6=QPushButton('Test',self)
-        self.button6.move(300,350)
+        self.button6 = QPushButton('Test', self)
+        self.button6.move(300, 350)
         self.button6.clicked.connect(self.on_click)
-        self.button7=QPushButton('Save Image',self)
-        self.button7.move(400,600)
+        self.button7 = QPushButton('Save Image', self)
+        self.button7.move(400, 600)
         self.button7.clicked.connect(self.downloadImage)
-        self.button8=QPushButton('Show Histogram',self)
-        self.button8.move(30,700)
+        self.button8 = QPushButton('Show Histogram', self)
+        self.button8.move(30, 700)
         self.button8.clicked.connect(self.showHistogram)
-        self.button9=QPushButton('Compare Images',self)
-        self.button9.move(400,700)
+        self.button9 = QPushButton('Compare Images', self)
+        self.button9.move(400, 700)
         self.button9.clicked.connect(self.compareImages)
-        self.button.resize(200,30)
-        self.button2.resize(200,30)
-        self.button3.resize(200,30)
-        self.button4.resize(200,30)
-        self.button5.resize(200,30)
-        self.button7.resize(200,30)
-        self.button8.resize(200,30)
-        self.button9.resize(200,30)
-        #self.imlabel = Qlabel(self)
+        self.button.resize(200, 30)
+        self.button2.resize(200, 30)
+        self.button3.resize(200, 30)
+        self.button4.resize(200, 30)
+        self.button5.resize(200, 30)
+        self.button7.resize(200, 30)
+        self.button8.resize(200, 30)
+        self.button9.resize(200, 30)
+        # self.imlabel = Qlabel(self)
 
         self.show()
-      # @pyqtSlot()
+
+    # @pyqtSlot()
     def callCreateUser(self):
         username = self.textbox.text()
         check = validateNewUser(username)
         msg = ""
-        if(check == -1):
-           msg = "Invalid"
-        if(check == 0):
-           msg =  "User Set (Already Exists)"
-           self.user = username
-           User.objects.raw({"_id":username}).first().loginhist.append(datetime.datetime.now())
-        if check==1:
-            u = User(username=username, imgslist=[""], loginhist = [datetime.datetime.now()])
-            u.save()
-            msg =  "User Created"
+        if (check == -1):
+            msg = "Invalid"
+        if (check == 0):
+            msg = "User Set (Already Exists)"
             self.user = username
-        QMessageBox.question(self, 'Message!',msg, QMessageBox.Ok, QMessageBox.Ok)
+            User.objects.raw({"_id": username}).first().loginhist.append(
+                datetime.datetime.now())
+        if check == 1:
+            u = User(username=username, imgslist=[""],
+                     loginhist=[datetime.datetime.now()])
+            u.save()
+            msg = "User Created"
+            self.user = username
+        QMessageBox.question(self, 'Message!', msg, QMessageBox.Ok,
+                             QMessageBox.Ok)
 
     def callAddImage(self):
-        fileName, _ = QFileDialog.getOpenFileNames(self, 'Single File', QtCore.QDir.rootPath() , '*.jpg;*.png;*.tif;*.zip')
+        fileName, _ = QFileDialog.getOpenFileNames(self, 'Single File',
+                                                   QtCore.QDir.rootPath(),
+                                                   '*.jpg;*.png;*.tif;*.zip')
         for k in fileName:
             self.files.append(k)
-        QMessageBox.question(self, 'Message!', "Image(s) Added to List",QMessageBox.Ok, QMessageBox.Ok)
+        QMessageBox.question(self, 'Message!', "Image(s) Added to List",
+                             QMessageBox.Ok, QMessageBox.Ok)
 
     def callProcessImages(self):
         for filepath in self.files:
             prepend = 0
-            if(detectFtype(filepath) == '.zip'):
+            if (detectFtype(filepath) == '.zip'):
                 prepend = prepend + 1
                 mypath = detectFilePathNoName(filepath)
-                ndir = mypath + str(prepend) + datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-                with zipfile.ZipFile(filepath,"r") as zip_ref:
+                ndir = mypath + str(
+                    prepend) + datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+                with zipfile.ZipFile(filepath, "r") as zip_ref:
                     zip_ref.extractall(ndir)
                 for j in os.listdir(ndir):
-                    nfile =mypath + j
+                    nfile = mypath + j
                     self.files.append(nfile)
             else:
                 temp = encode_image_as_b64_wmetrics(filepath)
@@ -418,20 +434,24 @@ class App(QMainWindow):
         self.files = []
 
     def downloadImage(self):
-        downloadIM(self.user, self.textbox2.text(), self.comboBox3.currentText(), self.comboBox2.currentText())
+        downloadIM(self.user, self.textbox2.text(),
+                   self.comboBox3.currentText(), self.comboBox2.currentText())
 
     def showImage(self):
         print(self.comboBox.currentText())
-        showIM(self.user, self.textbox2.text(),  self.comboBox.currentText())
-        #r= requests.post("http://127.0.0.1:5000/api/upload_image", json={"username":"chris", "filename":fname})
+        showIM(self.user, self.textbox2.text(), self.comboBox.currentText())
+        # r= requests.post("http://127.0.0.1:5000/api/upload_image",
+        # json={"username":"chris", "filename":fname})
 
     def showHistogram(self):
-        showHI(self.user, self.textbox2.text(),  self.comboBox.currentText())
+        showHI(self.user, self.textbox2.text(), self.comboBox.currentText())
 
     def callExternalProcessing(self):
         processingtype = self.comboBox.currentText()
         imname = self.textbox2.text()
-        r= requests.post("http://127.0.0.1:5000/api/im_processing", json={"username":self.user, "filename":imname, "processing": processingtype})
+        r = requests.post("http://127.0.0.1:5000/api/im_processing",
+                          json={"username": self.user, "filename": imname,
+                                "processing": processingtype})
 
     def compareImages(self):
         in1 = self.textbox2.text()
@@ -443,7 +463,8 @@ class App(QMainWindow):
     def on_click(self):
         print("nada")
 
+
 if __name__ == '__main__':
-    app=QApplication(sys.argv)
-    ex=App()
+    app = QApplication(sys.argv)
+    ex = App()
     sys.exit(app.exec_())
