@@ -20,6 +20,7 @@ connect("mongodb://daequan:360oogabooga@ds119151.mlab.com:19151/bme590finaldb")
 class User(MongoModel):
     username = fields.CharField(primary_key=True)
     imgslist = fields.ListField()
+    loginhist = fields.ListField()
 
 
 def decode_b64_image_helper(base64_string, format, dimensions):
