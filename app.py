@@ -461,7 +461,6 @@ class App(QMainWindow):
                    self.comboBox3.currentText(), self.comboBox2.currentText())
 
     def showImage(self):
-        print(self.comboBox.currentText())
         showIM(self.user, self.textbox2.text(), self.comboBox.currentText())
         # r= requests.post("http://127.0.0.1:5000/api/upload_image",
         # json={"username":"chris", "filename":fname})
@@ -509,10 +508,39 @@ class App(QMainWindow):
                              QMessageBox.Ok, QMessageBox.Ok)
 
     def saveZip(self):
-        print("HI")
+        username = self.user
+        testcount = User.objects.raw({"_id": username}).count()
+        if testcount == 0:
+            return
+        user_call = User.objects.raw({"_id": username}).first()
+        inputlist = user_call.imgslist
+        with zipfile.ZipFile('spam.zip', 'w') as myzip:
+            for k in self.tozip:
+                filename = k[0]
+                ptype = k[1]
+                ret = fetchDbHelper(inputlist, filename, ptype)
+                decodedim = ret[0]
+                saveupload = ret[2]
+                saveshape = ret[1]
+                numtimes = ret[3]
+                howlong = ret[4]
+                if saveupload == "":
+                    continue
+                tosave = Image.fromarray(decodedim)
+                fileformat = detectFtype(filename)
+                savestring = getRawName(filename) \
+                    + datetime.datetime.now().strftime("%Y%m%d%H%M%S")\
+                    + fileformat
+                tosave.save(savestring)
+                with open(savestring, "rb") as image_file:
+                    encodedim = base64.b64encode(image_file.read())
+                image_bytes = base64.b64decode(encodedim)
+                image_buf = io.BytesIO(image_bytes)
+                myzip.writestr(savestring, image_buf.read())
 
     def addToZip(self):
-        print("Hi")
+        toadd = [self.textbox2.text(), self.comboBox.currentText()]
+        self.tozip.append(toadd)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
