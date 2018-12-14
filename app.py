@@ -169,6 +169,9 @@ def upload_image(user, filename, filetype, dimensions, filedata):
 
     :returns 1 for funsies
     """
+    testcount = User.objects.raw({"_id": user}).count()
+    if testcount == 0:
+        return
     newim = constructImg(datetime.datetime.now(),
                          filename,
                          filedata,
@@ -193,6 +196,9 @@ def showIM(username, filename, processing):
 
     :returns doesn't return lul
     """
+    testcount = User.objects.raw({"_id": username}).count()
+    if testcount == 0:
+        return -1
     user_call = User.objects.raw({"_id": username}).first()
     ret = fetchDbHelper(user_call.imgslist, filename, processing)
     if ret[1] == "":
@@ -242,6 +248,9 @@ def showHI(username, filename, processing):
     """
     Displays histogram of given image
     """
+    testcount = User.objects.raw({"_id": username}).count()
+    if testcount == 0:
+        return
     user_call = User.objects.raw({"_id": username}).first()
     ret = fetchDbHelper(user_call.imgslist, filename, processing)
     if ret[1] == "":
@@ -308,6 +317,7 @@ class App(QMainWindow):
         self.height = 800
         self.files = []
         self.user = ""
+        self.tozip = []
         self.initUI()
 
     def initUI(self):
@@ -361,9 +371,6 @@ class App(QMainWindow):
         self.button5 = QPushButton('Show Image', self)
         self.button5.move(30, 600)
         self.button5.clicked.connect(self.showImage)
-        self.button6 = QPushButton('Test', self)
-        self.button6.move(300, 350)
-        self.button6.clicked.connect(self.on_click)
         self.button7 = QPushButton('Save Image', self)
         self.button7.move(400, 600)
         self.button7.clicked.connect(self.downloadImage)
@@ -373,6 +380,18 @@ class App(QMainWindow):
         self.button9 = QPushButton('Compare Images', self)
         self.button9.move(400, 700)
         self.button9.clicked.connect(self.compareImages)
+        self.button10 = QPushButton('Show Time On', self)
+        self.button10.move(350, 30)
+        self.button10.clicked.connect(self.showMetrics1)
+        self.button11 = QPushButton('Show Time Since Creation', self)
+        self.button11.move(575, 30)
+        self.button11.clicked.connect(self.showMetrics2)
+        self.button12 = QPushButton('Add to Zip', self)
+        self.button12.move(30, 300)
+        self.button12.clicked.connect(self.addToZip)
+        self.button13 = QPushButton('Save Zip', self)
+        self.button13.move(150, 300)
+        self.button13.clicked.connect(self.saveZip)
         self.button.resize(200, 30)
         self.button2.resize(200, 30)
         self.button3.resize(200, 30)
@@ -381,6 +400,8 @@ class App(QMainWindow):
         self.button7.resize(200, 30)
         self.button8.resize(200, 30)
         self.button9.resize(200, 30)
+        self.button10.resize(200, 30)
+        self.button11.resize(200, 30)
         # self.imlabel = Qlabel(self)
 
         self.show()
@@ -395,11 +416,13 @@ class App(QMainWindow):
         if (check == 0):
             msg = "User Set (Already Exists)"
             self.user = username
-            User.objects.raw({"_id": username}).first().loginhist.append(
-                datetime.datetime.now())
+            user_call = User.objects.raw({"_id": username}).first()
+            user_call.loginhist[1] = datetime.datetime.now()
+            user_call.save()
         if check == 1:
+            cpy = datetime.datetime.now()
             u = User(username=username, imgslist=[""],
-                     loginhist=[datetime.datetime.now()])
+                     loginhist=[cpy, cpy])
             u.save()
             msg = "User Created"
             self.user = username
@@ -463,6 +486,33 @@ class App(QMainWindow):
     def on_click(self):
         print("nada")
 
+    def showMetrics1(self):
+        username = self.user
+        testcount = User.objects.raw({"_id": username}).count()
+        if testcount == 0:
+            return
+        user_call = User.objects.raw({"_id": username}).first()
+        toshow = ""
+        timeon = datetime.datetime.now()-user_call.loginhist[1]
+        QMessageBox.question(self, 'Message!', str(timeon),
+                             QMessageBox.Ok, QMessageBox.Ok)
+
+    def showMetrics2(self):
+        username = self.user
+        testcount = User.objects.raw({"_id": username}).count()
+        if testcount == 0:
+            return
+        user_call = User.objects.raw({"_id": username}).first()
+        toshow = ""
+        created = datetime.datetime.now()-user_call.loginhist[0]
+        QMessageBox.question(self, 'Message!', str(created),
+                             QMessageBox.Ok, QMessageBox.Ok)
+
+    def saveZip(self):
+        print("HI")
+
+    def addToZip(self):
+        print("Hi")
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
