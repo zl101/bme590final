@@ -36,6 +36,8 @@ def decode_image_fromb64(imstring, format, shape):
 
 
 def histogram_equalize(image):
+    if (validateRawImage(image)):
+        return "TypeError"
     nim = exposure.equalize_hist(image)
     nim = 255 * nim
     nim = nim.astype(np.uint8)
@@ -43,6 +45,8 @@ def histogram_equalize(image):
 
 
 def contrast_stretch(image):
+    if (validateRawImage(image)):
+        return "TypeError"
     # min = np.amin(image)
     # max = np.amax(image)
     # con_str = lambda elem: (elem-min)*(((255-0)/(max-min))+0)
@@ -54,6 +58,8 @@ def contrast_stretch(image):
 
 
 def log_compress(image):
+    if (validateRawImage(image)):
+        return "TypeError"
     # max = np.amax(image)
     # gain = float(255)/float(math.log(1+abs(max)))
     # log_com = lambda elem: gain*math.log(1+abs(elem))
@@ -67,11 +73,15 @@ def log_compress(image):
 
 
 def reverse_video(image):
+    if (validateRawImage(image)):
+        return "TypeError"
     nim = util.invert(image)
     return base64.b64encode(nim).decode()
 
 
 def gamma_correct(image):
+    if(validateRawImage(image)):
+        return "TypeError"
     nim = exposure.adjust_gamma(image, 0.5)
     nim = 255 * nim
     nim = nim.astype(np.uint8)
@@ -109,6 +119,21 @@ def validateNewImage(input):
     if "dimensions" not in input.keys():
         return -1
     return 1
+
+
+def validateRawImage(img_string):
+    """
+    checks that input is np.ndarray with dtype uint8
+    :param img_string: string to be verified
+    :return: 0 on success, 1 on fail
+    """
+    if(type(img_string).__module__==np.__name__):
+        if('ndarray' in type(img_string)):
+            if isinstance(img_string, np.ndarray):
+                if str(img_string.dtype) == 'uint8':
+                    return 0
+    return 1
+
 
 
 @app.route("/api/im_processing", methods=["POST"])
