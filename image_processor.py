@@ -1,6 +1,7 @@
 import io
 import base64
 import datetime
+import logging
 import time
 import math
 import numpy as np
@@ -137,6 +138,8 @@ def process_image():
         processed = gamma_correct(image)
     else:
         return "no method found"
+    if processed == "TypeError":
+        logging.error("Image Invalid")
     end = time.time()
     elapsed_time = end - start
     if method.lower() in whichim["processeddict"]:
@@ -149,8 +152,12 @@ def process_image():
                                                 elapsed_time,
                                                 times_run]
     usertoprocess.save()
+    logging.info("Image Processing successful")
     return processed
 
 
 if __name__ == "__main__":
+    logging.basicConfig(filename="megatslog.txt",
+                        format='%(asctime)s %(message)s',
+                        datefmt='%m/%d/%Y %I:%M:%S %p')
     app.run(host="127.0.0.1")
