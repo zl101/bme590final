@@ -36,6 +36,8 @@ def decode_image_fromb64(imstring, format, shape):
 
 
 def histogram_equalize(image):
+    if (validateRawImage(image)):
+        return "TypeError"
     nim = exposure.equalize_hist(image)
     nim = 255 * nim
     nim = nim.astype(np.uint8)
@@ -43,6 +45,8 @@ def histogram_equalize(image):
 
 
 def contrast_stretch(image):
+    if (validateRawImage(image)):
+        return "TypeError"
     # min = np.amin(image)
     # max = np.amax(image)
     # con_str = lambda elem: (elem-min)*(((255-0)/(max-min))+0)
@@ -54,6 +58,8 @@ def contrast_stretch(image):
 
 
 def log_compress(image):
+    if (validateRawImage(image)):
+        return "TypeError"
     # max = np.amax(image)
     # gain = float(255)/float(math.log(1+abs(max)))
     # log_com = lambda elem: gain*math.log(1+abs(elem))
@@ -67,47 +73,32 @@ def log_compress(image):
 
 
 def reverse_video(image):
+    if (validateRawImage(image)):
+        return "TypeError"
     nim = util.invert(image)
     return base64.b64encode(nim).decode()
 
 
 def gamma_correct(image):
+    if (validateRawImage(image)):
+        return "TypeError"
     nim = exposure.adjust_gamma(image, 0.5)
     nim = 255 * nim
     nim = nim.astype(np.uint8)
     return base64.b64encode(nim).decode()
 
 
-def validateNewUser(input):
+def validateRawImage(img_string):
     """
-    -1 for invalid, 0 for already exists, 1 for ur gucci
+    checks that input is np.ndarray with dtype uint8
+    :param img_string: string to be verified
+    :return: 0 on success, 1 on fail
     """
-    if (not isinstance(input, type({}))):
-        return -1
-    if "username" not in input.keys():
-        return -1
-    if (not isinstance(input["username"], type("a"))):
-        return -1
-    checkUserExist = User.objects.raw({"_id": input['username']}).count()
-    if (checkUserExist == 0):
-        return 1
-    else:
-        return 0
-
-
-def validateNewImage(input):
-    if (not isinstance(input, type({}))):
-        return -1
-    if "username" not in input.keys():
-        return -1
-    if "filename" not in input.keys():
-        return -1
-    if "filetype" not in input.keys():
-        return -1
-    if "filedata" not in input.keys():
-        return -1
-    if "dimensions" not in input.keys():
-        return -1
+    if (type(img_string).__module__ == np.__name__):
+        if ('ndarray' in str(type(img_string))):
+            if isinstance(img_string, np.ndarray):
+                if str(img_string.dtype) == 'uint8':
+                    return 0
     return 1
 
 
