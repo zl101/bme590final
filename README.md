@@ -1,11 +1,12 @@
 # bme590final
-#How to Use
-For a walkthrough of the application, please refer to the shareable link or 
+EH158 ZL101, Image Processing
+##How to Use
++For a walkthrough of the application, please refer to the shareable link or 
 to the notes
-#To Run
+##To Run
 + Use Python 3, install requirements
 + Run python app.py to start up the app
-#Detailed Notes
+##Detailed Notes
 + First you enter a username in the field that says username
 + Then click set or create user
 + Then click add image, this will prompt you to select some images to be added
@@ -29,5 +30,5 @@ to the notes
 .com/open?id=1f1ifNnkn_FP88YFaNwRF4YtoYpvYbcN_
 + Server URL: http://vcm-7452.vm.duke.edu:5000
 ## Build status:
-EH158 ZL101, Image Processing
+
 [![Build Status](https://travis-ci.org/zl101bme590final.svg?branch=master)](https://travis-ci.org/zl101/bme590final)
