@@ -106,7 +106,7 @@ def validateRawImage(img_string):
 def validateInputs(dict):
     keys = ['username', 'processing', 'filename']
     for i in keys:
-        if i not in dict:
+        if i not in dict.keys():
             return 1
     testcount = User.objects.raw({"_id": dict['username']}).count()
     if testcount == 0:
