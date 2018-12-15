@@ -35,6 +35,7 @@ EH158 ZL101, Image Processing
 + Video demonstrations: https://drive.google
 .com/open?id=1f1ifNnkn_FP88YFaNwRF4YtoYpvYbcN_
 + Server URL: http://vcm-7452.vm.duke.edu:5000
++ Image processing POST request URL: http://vcm-7452.vm.duke.edu:5000/api/im_processing
 ## Build status:
 
 [![Build Status](https://travis-ci.org/zl101bme590final.svg?branch=master)](https://travis-ci.org/zl101/bme590final)
