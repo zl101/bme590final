@@ -18,6 +18,7 @@ from pymodm import MongoModel, fields
 import zipfile
 import os
 from matplotlib.pyplot import figure
+import logging
 
 connect("mongodb://daequan:360oogabooga@ds119151.mlab.com:19151/bme590finaldb")
 
@@ -133,6 +134,9 @@ def validateNewUser(input):
 
 
 def fetchDbHelper(list, filename, processing):
+    """
+    Helper function to fetch useful image traits stored in db
+    """
     saveupload = ""
     saveshape = ""
     numtimes = ""
@@ -402,12 +406,17 @@ class App(QMainWindow):
         self.button9.resize(200, 30)
         self.button10.resize(200, 30)
         self.button11.resize(200, 30)
+        self.comboBox.resize(200, 30)
+        self.comboBox2.resize(200, 30)
         # self.imlabel = Qlabel(self)
 
         self.show()
 
     # @pyqtSlot()
     def callCreateUser(self):
+        """
+        Creates a user, first validating it, then writes it to db
+        """
         username = self.textbox.text()
         check = validateNewUser(username)
         msg = ""
@@ -439,6 +448,9 @@ class App(QMainWindow):
                              QMessageBox.Ok, QMessageBox.Ok)
 
     def callProcessImages(self):
+        """
+        Helper function that uploads images and adds desired metrics
+        """
         for filepath in self.files:
             prepend = 0
             if (detectFtype(filepath) == '.zip'):
@@ -457,57 +469,87 @@ class App(QMainWindow):
         self.files = []
 
     def downloadImage(self):
+        """
+        Handler Function
+        """
         downloadIM(self.user, self.textbox2.text(),
                    self.comboBox3.currentText(), self.comboBox2.currentText())
+        logging.info("Image(s) downloaded")
 
     def showImage(self):
+        """
+        Handler Function
+        """
         showIM(self.user, self.textbox2.text(), self.comboBox.currentText())
         # r= requests.post("http://127.0.0.1:5000/api/upload_image",
         # json={"username":"chris", "filename":fname})
 
     def showHistogram(self):
+        """
+        Handler Function
+        """
         showHI(self.user, self.textbox2.text(), self.comboBox.currentText())
 
     def callExternalProcessing(self):
+        """
+        Handler Function
+        """
         processingtype = self.comboBox.currentText()
         imname = self.textbox2.text()
-        r = requests.post("http://127.0.0.1:5000/api/im_processing",
+        r = requests.post("http://vcm-7452.vm.duke.edu:5000/api/im_processing",
                           json={"username": self.user, "filename": imname,
                                 "processing": processingtype})
+        response = r.status_code
+        if response == 500:
+            logging.error(r.text)
+        elif response == 200:
+            logging.info("Image Processed")
+        else:
+            logging.error("Unexpected Error")
+            logging.error(r.text)
 
     def compareImages(self):
+        """
+        Handler function
+        """
         in1 = self.textbox2.text()
         in2 = self.comboBox.currentText()
         in3 = self.textbox3.text()
         in4 = self.comboBox2.currentText()
         compareIM(self.user, in1, in2, in3, in4)
 
-    def on_click(self):
-        print("nada")
-
     def showMetrics1(self):
+        """
+        Shows how long a user has been signed in
+        """
         username = self.user
         testcount = User.objects.raw({"_id": username}).count()
         if testcount == 0:
             return
         user_call = User.objects.raw({"_id": username}).first()
         toshow = ""
-        timeon = datetime.datetime.now()-user_call.loginhist[1]
+        timeon = datetime.datetime.now() - user_call.loginhist[1]
         QMessageBox.question(self, 'Message!', str(timeon),
                              QMessageBox.Ok, QMessageBox.Ok)
 
     def showMetrics2(self):
+        """
+        Shows how long a user has been active
+        """
         username = self.user
         testcount = User.objects.raw({"_id": username}).count()
         if testcount == 0:
             return
         user_call = User.objects.raw({"_id": username}).first()
         toshow = ""
-        created = datetime.datetime.now()-user_call.loginhist[0]
+        created = datetime.datetime.now() - user_call.loginhist[0]
         QMessageBox.question(self, 'Message!', str(created),
                              QMessageBox.Ok, QMessageBox.Ok)
 
     def saveZip(self):
+        """
+        Saves to zip selected files
+        """
         username = self.user
         testcount = User.objects.raw({"_id": username}).count()
         if testcount == 0:
@@ -528,21 +570,26 @@ class App(QMainWindow):
                     continue
                 tosave = Image.fromarray(decodedim)
                 fileformat = detectFtype(filename)
-                savestring = getRawName(filename) \
-                    + datetime.datetime.now().strftime("%Y%m%d%H%M%S")\
-                    + fileformat
-                tosave.save(savestring)
-                with open(savestring, "rb") as image_file:
+                svstr = getRawName(
+                    filename) + datetime.datetime.now().strftime(
+                    "%Y%m%d%H%M%S") + fileformat
+                tosave.save(svstr)
+                with open(svstr, "rb") as image_file:
                     encodedim = base64.b64encode(image_file.read())
                 image_bytes = base64.b64decode(encodedim)
                 image_buf = io.BytesIO(image_bytes)
-                myzip.writestr(savestring, image_buf.read())
+                myzip.writestr(svstr, image_buf.read())
+        self.tozip = []
 
     def addToZip(self):
         toadd = [self.textbox2.text(), self.comboBox.currentText()]
         self.tozip.append(toadd)
 
+
 if __name__ == '__main__':
+    logging.basicConfig(filename="applog.txt",
+                        format='%(asctime)s %(message)s',
+                        datefmt='%m/%d/%Y %I:%M:%S %p')
     app = QApplication(sys.argv)
     ex = App()
     sys.exit(app.exec_())
