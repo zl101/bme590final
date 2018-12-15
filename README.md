@@ -1,10 +1,13 @@
 # bme590final
 EH158 ZL101, Image Processing
 [![Build Status](https://travis-ci.org/zl101bme590final.svg?branch=master)](https://travis-ci.org/zl101/bme590final)
-##To Run
+#How to Use
+For a walkthrough of the application, please refer to the shareable link or 
+to the notes
+#To Run
 + Use Python 3, install requirements
 + Run python app.py to start up the app
-##Detailed Notes
+#Detailed Notes
 + First you enter a username in the field that says username
 + Then click set or create user
 + Then click add image, this will prompt you to select some images to be added
@@ -23,9 +26,7 @@ EH158 ZL101, Image Processing
 + Save multiple processed images by first specifying an image in field 1 and appropriate dropdown, and then clicking add to zip. Do this multiple times and when you have added all desired files, click save zip which will save all the images you just added to a zip file
 + for the current user, click show time on to show how long it's been since you signed on
 + for the current user, click show time since creation to show how long it's been since you first created your username
-##Links:
+#Links:
 + Video demonstrations: https://drive.google
 .com/open?id=1f1ifNnkn_FP88YFaNwRF4YtoYpvYbcN_
 + Server URL: http://vcm-7452.vm.duke.edu:5000
-##How to Use
-For a walkthrough of the application, please refer to the shareable link 
