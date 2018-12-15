@@ -133,6 +133,9 @@ def validateNewUser(input):
 
 
 def fetchDbHelper(list, filename, processing):
+    """
+    Helper function to fetch useful image traits stored in db
+    """
     saveupload = ""
     saveshape = ""
     numtimes = ""
@@ -402,12 +405,17 @@ class App(QMainWindow):
         self.button9.resize(200, 30)
         self.button10.resize(200, 30)
         self.button11.resize(200, 30)
+        self.comboBox.resize(200,30)
+        self.comboBox2.resize(200,30)
         # self.imlabel = Qlabel(self)
 
         self.show()
 
     # @pyqtSlot()
     def callCreateUser(self):
+        """
+        Creates a user, first validating it, then writes it to db
+        """
         username = self.textbox.text()
         check = validateNewUser(username)
         msg = ""
@@ -439,6 +447,9 @@ class App(QMainWindow):
                              QMessageBox.Ok, QMessageBox.Ok)
 
     def callProcessImages(self):
+        """
+        Helper function that uploads images and adds desired metrics
+        """
         for filepath in self.files:
             prepend = 0
             if (detectFtype(filepath) == '.zip'):
@@ -457,35 +468,50 @@ class App(QMainWindow):
         self.files = []
 
     def downloadImage(self):
+        """
+        Handler Function
+        """
         downloadIM(self.user, self.textbox2.text(),
                    self.comboBox3.currentText(), self.comboBox2.currentText())
 
     def showImage(self):
+        """
+        Handler Function
+        """
         showIM(self.user, self.textbox2.text(), self.comboBox.currentText())
         # r= requests.post("http://127.0.0.1:5000/api/upload_image",
         # json={"username":"chris", "filename":fname})
 
     def showHistogram(self):
+        """
+        Handler Function
+        """
         showHI(self.user, self.textbox2.text(), self.comboBox.currentText())
 
     def callExternalProcessing(self):
+        """
+        Handler Function
+        """
         processingtype = self.comboBox.currentText()
         imname = self.textbox2.text()
-        r = requests.post("http://127.0.0.1:5000/api/im_processing",
+        r = requests.post("http://vcm-7452.vm.duke.edu:5000/api/im_processing",
                           json={"username": self.user, "filename": imname,
                                 "processing": processingtype})
 
     def compareImages(self):
+        """
+        Handler function
+        """
         in1 = self.textbox2.text()
         in2 = self.comboBox.currentText()
         in3 = self.textbox3.text()
         in4 = self.comboBox2.currentText()
         compareIM(self.user, in1, in2, in3, in4)
 
-    def on_click(self):
-        print("nada")
-
     def showMetrics1(self):
+        """
+        Shows how long a user has been signed in
+        """
         username = self.user
         testcount = User.objects.raw({"_id": username}).count()
         if testcount == 0:
@@ -497,6 +523,9 @@ class App(QMainWindow):
                              QMessageBox.Ok, QMessageBox.Ok)
 
     def showMetrics2(self):
+        """
+        Shows how long a user has been active
+        """
         username = self.user
         testcount = User.objects.raw({"_id": username}).count()
         if testcount == 0:
@@ -508,6 +537,9 @@ class App(QMainWindow):
                              QMessageBox.Ok, QMessageBox.Ok)
 
     def saveZip(self):
+        """
+        Saves to zip selected files
+        """
         username = self.user
         testcount = User.objects.raw({"_id": username}).count()
         if testcount == 0:
@@ -537,6 +569,7 @@ class App(QMainWindow):
                 image_bytes = base64.b64decode(encodedim)
                 image_buf = io.BytesIO(image_bytes)
                 myzip.writestr(savestring, image_buf.read())
+        self.tozip = []
 
     def addToZip(self):
         toadd = [self.textbox2.text(), self.comboBox.currentText()]
