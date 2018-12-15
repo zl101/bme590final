@@ -2,6 +2,14 @@ import pytest
 from image_processor import *
 from app import encode_image_as_b64_wmetrics
 
+connect("mongodb://daequan:360oogabooga@ds119151.mlab.com:19151/bme590finaldb")
+
+
+class User(MongoModel):
+    username = fields.CharField(primary_key=True)
+    imgslist = fields.ListField()
+    loginhist = fields.ListField()
+
 
 @pytest.mark.parametrize("type , input, output", [
     (1, "./cat.jpg", "cathist.txt"),
@@ -124,10 +132,10 @@ def test_validateRawImage(input, expected):
 
 @pytest.mark.parametrize("input, expected", [
     ({"username": "wolf", "filename": "butterfly.jpg", "processing":
+        "log_compress"}, 0),
+    ({"username": "rip", "filename": "butterfly.jpg", "processing":
         "log_compress"},
-     0), ({"username": "rip", "filename": "butterfly.jpg", "processing":
-        "log_compress"},
-          2), ({"username": "wolf", "processing": "log_compress"}, 1),
+     2), ({"username": "wolf", "processing": "log_compress"}, 1),
     ({"filename": "butterfly.jpg", "processing": "log_compress"}, 1),
     ({"username": "wolf", "filename": "butterfly.jpg"}, 1)
 ])
