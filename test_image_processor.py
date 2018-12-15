@@ -7,7 +7,7 @@ from app import encode_image_as_b64_wmetrics
 @pytest.mark.parametrize("type","input", "output", [
     (1, "./cat.jpg","cathist.txt"),
     (0, np.array([1,2]), "TypeError"),
-    (0, np.array['1',2], "TypeError")
+    (0, np.array(['1',2]), "TypeError")
 ])
 def test_histogram_equalize(type, input, output):
     if type == 1:
@@ -26,7 +26,7 @@ def test_histogram_equalize(type, input, output):
 @pytest.mark.parametrize("type","input", "output", [
     (1, "./cat.jpg","catcon.txt"),
     (0, np.array([1,2]), "TypeError"),
-    (0, np.array['1',2], "TypeError")
+    (0, np.array(['1',2]), "TypeError")
 ])
 def test_contrast_stretch(type, input, output):
     if type == 1:
@@ -45,7 +45,7 @@ def test_contrast_stretch(type, input, output):
 @pytest.mark.parametrize("type","input", "output", [
     (1, "./cat.jpg","catlog.txt"),
     (0, np.array([1,2]), "TypeError"),
-    (0, np.array['1',2], "TypeError")
+    (0, np.array(['1',2]), "TypeError")
 ])
 def test_log_compress(type, input, output):
     if type == 1:
@@ -64,7 +64,7 @@ def test_log_compress(type, input, output):
 @pytest.mark.parametrize("type","input", "output", [
     (1, "./cat.jpg","catgamma.txt"),
     (0, np.array([1,2]), "TypeError"),
-    (0, np.array['1',2], "TypeError")
+    (0, np.array(['1',2]), "TypeError")
 ])
 def test_gamma_correct(type, input, output):
     if type == 1:
@@ -84,7 +84,7 @@ def test_gamma_correct(type, input, output):
 @pytest.mark.parametrize("type","input", "output", [
     (1, "./cat.jpg","catreverse.txt"),
     (0, np.array([1,2]), "TypeError"),
-    (0, np.array['1',2], "TypeError")
+    (0, np.array(['1',2]), "TypeError")
 ])
 def test_reverse_video(type, input, output):
     if type == 1:
