@@ -570,15 +570,15 @@ class App(QMainWindow):
                     continue
                 tosave = Image.fromarray(decodedim)
                 fileformat = detectFtype(filename)
-                savestring = getRawName(filename) \
-                             + datetime.datetime.now().strftime("%Y%m%d%H%M%S") \
-                             + fileformat
-                tosave.save(savestring)
-                with open(savestring, "rb") as image_file:
+                svstr = getRawName(
+                    filename) + datetime.datetime.now().strftime(
+                    "%Y%m%d%H%M%S") + fileformat
+                tosave.save(svstr)
+                with open(svstr, "rb") as image_file:
                     encodedim = base64.b64encode(image_file.read())
                 image_bytes = base64.b64decode(encodedim)
                 image_buf = io.BytesIO(image_bytes)
-                myzip.writestr(savestring, image_buf.read())
+                myzip.writestr(svstr, image_buf.read())
         self.tozip = []
 
     def addToZip(self):
