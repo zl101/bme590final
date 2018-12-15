@@ -1,5 +1,11 @@
 # bme590final
 EH158 ZL101, Image Processing
+## Summary of Functionalities
++ Tracks files and actions for every single user
++ Allows image upload, image processing, and image display services
++ Image processing tasks supported include Histogram Equalization, Contrast Stretching, Log Compression, Reverse Video, and Gamma Correction
++ Supports .jpg, .png, and .tiff image file formats;  files can also be saved in a .zip file
++ Stores timestamps of image uploads, information on user logins, and latency in calling image processing tasks
 ## How to Use
 + For a walkthrough of the application, please refer to the shareable link on google drive or to the notes; both of these are listed below
 ## To Run
