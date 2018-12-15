@@ -406,8 +406,8 @@ class App(QMainWindow):
         self.button9.resize(200, 30)
         self.button10.resize(200, 30)
         self.button11.resize(200, 30)
-        self.comboBox.resize(200,30)
-        self.comboBox2.resize(200,30)
+        self.comboBox.resize(200, 30)
+        self.comboBox2.resize(200, 30)
         # self.imlabel = Qlabel(self)
 
         self.show()
@@ -528,7 +528,7 @@ class App(QMainWindow):
             return
         user_call = User.objects.raw({"_id": username}).first()
         toshow = ""
-        timeon = datetime.datetime.now()-user_call.loginhist[1]
+        timeon = datetime.datetime.now() - user_call.loginhist[1]
         QMessageBox.question(self, 'Message!', str(timeon),
                              QMessageBox.Ok, QMessageBox.Ok)
 
@@ -542,7 +542,7 @@ class App(QMainWindow):
             return
         user_call = User.objects.raw({"_id": username}).first()
         toshow = ""
-        created = datetime.datetime.now()-user_call.loginhist[0]
+        created = datetime.datetime.now() - user_call.loginhist[0]
         QMessageBox.question(self, 'Message!', str(created),
                              QMessageBox.Ok, QMessageBox.Ok)
 
@@ -571,8 +571,8 @@ class App(QMainWindow):
                 tosave = Image.fromarray(decodedim)
                 fileformat = detectFtype(filename)
                 savestring = getRawName(filename) \
-                    + datetime.datetime.now().strftime("%Y%m%d%H%M%S")\
-                    + fileformat
+                             + datetime.datetime.now().strftime("%Y%m%d%H%M%S") \
+                             + fileformat
                 tosave.save(savestring)
                 with open(savestring, "rb") as image_file:
                     encodedim = base64.b64encode(image_file.read())
@@ -584,6 +584,7 @@ class App(QMainWindow):
     def addToZip(self):
         toadd = [self.textbox2.text(), self.comboBox.currentText()]
         self.tozip.append(toadd)
+
 
 if __name__ == '__main__':
     logging.basicConfig(filename="applog.txt",

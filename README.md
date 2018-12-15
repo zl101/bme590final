@@ -5,5 +5,6 @@ EH158 ZL101, Image Processing
 + Use Python 3, install requirements
 + Run python app.py to start up the app
 ##Notes
-+
-vcm-7452.vm.duke.edu:5000
++ Host url: vcm-7452.vm.duke.edu:5000
+##Video Demonstration Link
++ https://drive.google.com/open?id=1f1ifNnkn_FP88YFaNwRF4YtoYpvYbcN_
