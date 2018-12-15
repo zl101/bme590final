@@ -6,6 +6,7 @@ EH158 ZL101, Image Processing
 + Image processing tasks supported include Histogram Equalization, Contrast Stretching, Log Compression, Reverse Video, and Gamma Correction
 + Supports .jpg, .png, and .tiff image file formats;  files can also be saved in a .zip file
 + Stores timestamps of image uploads, information on user logins, and latency in calling image processing tasks
++ For processed images, stores only the most recently processed version but notes the number of times that each processing has been performed
 ## How to Use
 + For a walkthrough of the application, please refer to the shareable link on google drive or to the notes; both of these are listed below
 ## To Run
