@@ -1,6 +1,7 @@
 import io
 import base64
 import datetime
+import logging
 import time
 import math
 import numpy as np
@@ -102,6 +103,14 @@ def validateRawImage(img_string):
     return 1
 
 
+def validateInputs(dict):
+    dict_keys = ['username', 'processing', 'filename']
+    for i in dict_keys:
+        if i not in dict.keys():
+            return 1
+    return 0
+
+
 @app.route("/api/im_processing", methods=["POST"])
 def process_image():
     # Histogram Equalization [default]
@@ -112,9 +121,12 @@ def process_image():
     Needs filename, method, method_args, username
     """
     r = request.get_json()
+    check = validateInputs(r)
+    if check == 1:
+        logging.eror("Insufficient information")
+        return "KeyError"
     username = r['username']
     method = r['processing']
-    # validate json, parse json
     usertoprocess = User.objects.raw({"_id": username}).first()
     for k in usertoprocess.imgslist:
         if k == "":
@@ -137,6 +149,8 @@ def process_image():
         processed = gamma_correct(image)
     else:
         return "no method found"
+    if processed == "TypeError":
+        logging.error("Image Invalid")
     end = time.time()
     elapsed_time = end - start
     if method.lower() in whichim["processeddict"]:
@@ -149,8 +163,12 @@ def process_image():
                                                 elapsed_time,
                                                 times_run]
     usertoprocess.save()
+    logging.info("Image Processing successful")
     return processed
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1")
+    logging.basicConfig(filename="megatslog.txt",
+                        format='%(asctime)s %(message)s',
+                        datefmt='%m/%d/%Y %I:%M:%S %p')
+    app.run(host="0.0.0.0")
