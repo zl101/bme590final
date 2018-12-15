@@ -1,8 +1,7 @@
 # bme590final
 EH158 ZL101, Image Processing
 ## How to Use
-+For a walkthrough of the application, please refer to the shareable link or 
-to the notes
++ For a walkthrough of the application, please refer to the shareable link on google drive or to the notes; both of these are listed below
 ## To Run
 + Use Python 3, install requirements
 + Run python app.py to start up the app
