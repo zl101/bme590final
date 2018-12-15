@@ -171,4 +171,4 @@ if __name__ == "__main__":
     logging.basicConfig(filename="megatslog.txt",
                         format='%(asctime)s %(message)s',
                         datefmt='%m/%d/%Y %I:%M:%S %p')
-    app.run(host="127.0.0.1")
+    app.run(host="0.0.0.0")
