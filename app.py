@@ -18,6 +18,7 @@ from pymodm import MongoModel, fields
 import zipfile
 import os
 from matplotlib.pyplot import figure
+import logging
 
 connect("mongodb://daequan:360oogabooga@ds119151.mlab.com:19151/bme590finaldb")
 
@@ -473,6 +474,7 @@ class App(QMainWindow):
         """
         downloadIM(self.user, self.textbox2.text(),
                    self.comboBox3.currentText(), self.comboBox2.currentText())
+        logging.info("Image(s) downloaded")
 
     def showImage(self):
         """
@@ -497,6 +499,14 @@ class App(QMainWindow):
         r = requests.post("http://vcm-7452.vm.duke.edu:5000/api/im_processing",
                           json={"username": self.user, "filename": imname,
                                 "processing": processingtype})
+        response = r.status_code
+        if response == 500:
+            logging.error(r.text)
+        elif response == 200:
+            logging.info("Image Processed")
+        else:
+            logging.error("Unexpected Error")
+            logging.error(r.text)
 
     def compareImages(self):
         """
@@ -576,6 +586,9 @@ class App(QMainWindow):
         self.tozip.append(toadd)
 
 if __name__ == '__main__':
+    logging.basicConfig(filename="applog.txt",
+                        format='%(asctime)s %(message)s',
+                        datefmt='%m/%d/%Y %I:%M:%S %p')
     app = QApplication(sys.argv)
     ex = App()
     sys.exit(app.exec_())

@@ -7,11 +7,12 @@ import math
 import numpy as np
 from pymodm import connect
 from pymodm import MongoModel, fields
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
 from PIL import Image
 from skimage import data, exposure, img_as_float, util
+import json
 
 app = Flask(__name__)
 
@@ -25,18 +26,53 @@ class User(MongoModel):
 
 
 def decode_b64_image_helper(base64_string, format, dimensions):
+    """
+    Helper function to decode b64 image
+    ----------
+    Parameters
+    ----------
+    base64_string: string representing encoded image
+    format: str detailing format of image (.jpg, .png, .tiff)
+    dimensions: np array of the shape of the image
+    Returns
+    -------
+        np array of the decoded image
+    """
     decode = base64.b64decode(base64_string)
     res = np.frombuffer(decode, dtype=np.uint8)
     return np.reshape(res, dimensions)
 
 
 def decode_image_fromb64(imstring, format, shape):
+    """
+    Decodes b64 image
+    ----------
+    Parameters
+    ----------
+    imstring: string representing image
+    format: str detailing format of image (.jpg, .png, .tiff)
+    shape: np array of the shape of the image
+    Returns
+    -------
+        np array of the decoded image
+    """
     imbytes = imstring.encode()
     decoded = decode_b64_image_helper(imbytes, format, shape)
     return decoded
 
 
 def histogram_equalize(image):
+    """
+    Performs histogram equalization
+    ----------
+    Parameters
+    ----------
+    image: np array representing image, dtype = uint8
+    Returns
+    -------
+        np array of the processed image, dtype = uint8
+        "TypeError" if image is invalid
+    """
     if (validateRawImage(image)):
         return "TypeError"
     nim = exposure.equalize_hist(image)
@@ -46,6 +82,17 @@ def histogram_equalize(image):
 
 
 def contrast_stretch(image):
+    """
+    Performs contrast stretching
+    ----------
+    Parameters
+    ----------
+    image: np array representing image, dtype = uint8
+    Returns
+    -------
+        np array of the processed image, dtype = uint8
+        "TypeError" if image is invalid
+    """
     if (validateRawImage(image)):
         return "TypeError"
     # min = np.amin(image)
@@ -59,6 +106,17 @@ def contrast_stretch(image):
 
 
 def log_compress(image):
+    """
+    Performs log compression
+    ----------
+    Parameters
+    ----------
+    image: np array representing image, dtype = uint8
+    Returns
+    -------
+        np array of the processed image, dtype = uint8
+        "TypeError" if image is invalid
+    """
     if (validateRawImage(image)):
         return "TypeError"
     # max = np.amax(image)
@@ -74,6 +132,17 @@ def log_compress(image):
 
 
 def reverse_video(image):
+    """
+    Performs reverse video (inverting an image)
+    ----------
+    Parameters
+    ----------
+    image: np array representing image, dtype = uint8
+    Returns
+    -------
+        np array of the processed image, dtype = uint8
+        "TypeError" if image is invalid
+    """
     if (validateRawImage(image)):
         return "TypeError"
     nim = util.invert(image)
@@ -81,6 +150,17 @@ def reverse_video(image):
 
 
 def gamma_correct(image):
+    """
+    Performs gamma correction
+    ----------
+    Parameters
+    ----------
+    image: np array representing image, dtype = uint8
+    Returns
+    -------
+        np array of the processed image, dtype = uint8
+        "TypeError" if image is invalid
+    """
     if (validateRawImage(image)):
         return "TypeError"
     nim = exposure.adjust_gamma(image, 0.5)
@@ -91,9 +171,15 @@ def gamma_correct(image):
 
 def validateRawImage(img_string):
     """
-    checks that input is np.ndarray with dtype uint8
-    :param img_string: string to be verified
-    :return: 0 on success, 1 on fail
+    Validates that image is represented by np ndarray with dtype uint8
+    ----------
+    Parameters
+    ----------
+    image: np array representing image
+    Returns
+    -------
+        0 if valid
+        1 if invalid
     """
     if (type(img_string).__module__ == np.__name__):
         if ('ndarray' in str(type(img_string))):
@@ -104,6 +190,17 @@ def validateRawImage(img_string):
 
 
 def validateInputs(dict):
+    """
+    Checks that all necessary inputs to post request are present
+    ----------
+    Parameters
+    ----------
+    dict: dictionary received from post request
+    Returns
+    -------
+        1 if there are missing keys
+        0 if all keys are present
+    """
     dict_keys = ['username', 'processing', 'filename']
     for i in dict_keys:
         if i not in dict.keys():
@@ -117,14 +214,24 @@ def process_image():
     # Contrast Stretching
     # Log Compression
     # Reverse Video
+    # Gamma Correction
     """
-    Needs filename, method, method_args, username
+    Interfaces with database to process an image processing
+    post request
+    ----------
+    Parameters
+    ----------
+    None
+    Returns
+    -------
+        Success if image processing is successful
+        Status 500 with error message in the case of an error
     """
     r = request.get_json()
     check = validateInputs(r)
     if check == 1:
-        logging.eror("Insufficient information")
-        return "KeyError"
+        logging.error("Insufficient information")
+        return Response(json.dumps({'Error': 'Key Missing'}), status=500)
     username = r['username']
     method = r['processing']
     usertoprocess = User.objects.raw({"_id": username}).first()
@@ -151,6 +258,8 @@ def process_image():
         return "no method found"
     if processed == "TypeError":
         logging.error("Image Invalid")
+        return Response(json.dumps({'Error': 'Image Type Invalid'}),
+                        status=500)
     end = time.time()
     elapsed_time = end - start
     if method.lower() in whichim["processeddict"]:
@@ -164,7 +273,7 @@ def process_image():
                                                 times_run]
     usertoprocess.save()
     logging.info("Image Processing successful")
-    return processed
+    return "Success"
 
 
 if __name__ == "__main__":
