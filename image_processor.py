@@ -88,39 +88,6 @@ def gamma_correct(image):
     return base64.b64encode(nim).decode()
 
 
-def validateNewUser(input):
-    """
-    -1 for invalid, 0 for already exists, 1 for ur gucci
-    """
-    if (not isinstance(input, type({}))):
-        return -1
-    if "username" not in input.keys():
-        return -1
-    if (not isinstance(input["username"], type("a"))):
-        return -1
-    checkUserExist = User.objects.raw({"_id": input['username']}).count()
-    if (checkUserExist == 0):
-        return 1
-    else:
-        return 0
-
-
-def validateNewImage(input):
-    if (not isinstance(input, type({}))):
-        return -1
-    if "username" not in input.keys():
-        return -1
-    if "filename" not in input.keys():
-        return -1
-    if "filetype" not in input.keys():
-        return -1
-    if "filedata" not in input.keys():
-        return -1
-    if "dimensions" not in input.keys():
-        return -1
-    return 1
-
-
 def validateRawImage(img_string):
     """
     checks that input is np.ndarray with dtype uint8
