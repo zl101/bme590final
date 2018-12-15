@@ -104,15 +104,11 @@ def validateRawImage(img_string):
 
 
 def validateInputs(dict):
-    keys = ['username', 'processing', 'filename']
-    for i in keys:
+    dict_keys = ['username', 'processing', 'filename']
+    for i in dict_keys:
         if i not in dict.keys():
             return 1
-    testcount = User.objects.raw({"_id": dict['username']}).count()
-    if testcount == 0:
-        return 2
-    else:
-        return 0
+    return 0
 
 
 @app.route("/api/im_processing", methods=["POST"])
@@ -129,9 +125,6 @@ def process_image():
     if check == 1:
         logging.eror("Insufficient information")
         return "KeyError"
-    elif check == 2:
-        logging.error("User does not exist")
-        return "UserError"
     username = r['username']
     method = r['processing']
     usertoprocess = User.objects.raw({"_id": username}).first()
