@@ -80,7 +80,7 @@ def reverse_video(image):
 
 
 def gamma_correct(image):
-    if(validateRawImage(image)):
+    if (validateRawImage(image)):
         return "TypeError"
     nim = exposure.adjust_gamma(image, 0.5)
     nim = 255 * nim
@@ -127,13 +127,12 @@ def validateRawImage(img_string):
     :param img_string: string to be verified
     :return: 0 on success, 1 on fail
     """
-    if(type(img_string).__module__==np.__name__):
-        if('ndarray' in type(img_string)):
+    if (type(img_string).__module__ == np.__name__):
+        if ('ndarray' in str(type(img_string))):
             if isinstance(img_string, np.ndarray):
                 if str(img_string.dtype) == 'uint8':
                     return 0
     return 1
-
 
 
 @app.route("/api/im_processing", methods=["POST"])
