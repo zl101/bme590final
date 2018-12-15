@@ -120,3 +120,16 @@ def test_reverse_video(type, input, output):
 ])
 def test_validateRawImage(input, expected):
     assert validateRawImage(input) == expected
+
+
+@pytest.mark.parametrize("input, expected", [
+    ({"username": "wolf", "filename": "butterfly.jpg", "processing":
+        "log_compress"},
+     0), ({"username": "rip", "filename": "butterfly.jpg", "processing":
+        "log_compress"},
+          2), ({"username": "wolf", "processing": "log_compress"}, 1),
+    ({"filename": "butterfly.jpg", "processing": "log_compress"}, 1),
+    ({"username": "wolf", "filename": "butterfly.jpg"}, 1)
+])
+def test_validateInputs(input, expected):
+    assert validateInputs(input) == expected

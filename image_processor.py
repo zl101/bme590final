@@ -103,6 +103,18 @@ def validateRawImage(img_string):
     return 1
 
 
+def validateInputs(dict):
+    keys = ['username', 'processing', 'filename']
+    for i in keys:
+        if i not in dict:
+            return 1
+    testcount = User.objects.raw({"_id": dict['username']}).count()
+    if testcount == 0:
+        return 2
+    else:
+        return 0
+
+
 @app.route("/api/im_processing", methods=["POST"])
 def process_image():
     # Histogram Equalization [default]
@@ -113,9 +125,15 @@ def process_image():
     Needs filename, method, method_args, username
     """
     r = request.get_json()
+    check = validateInputs(r)
+    if check == 1:
+        logging.eror("Insufficient information")
+        return "KeyError"
+    elif check == 2:
+        logging.error("User does not exist")
+        return "UserError"
     username = r['username']
     method = r['processing']
-    # validate json, parse json
     usertoprocess = User.objects.raw({"_id": username}).first()
     for k in usertoprocess.imgslist:
         if k == "":
